@@ -1,0 +1,17 @@
+{
+  "name": "apsjs",
+  "version": "1.0.1 - 20170809",
+  "create_date": "20170809",
+  "description": "aps600rc - npm - js 插件",
+  "main": "index.js",
+  "bin": {
+    "apsjs": "./src/cli/aps.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Joshua Conero",
+  "private": true,
+  "license": "ISC"
+}
