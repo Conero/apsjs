@@ -1,11 +1,15 @@
-# apsjs - aps600rc - js-npm for
+# apsjs - (A NodeJs Learning and Trying)
 >
     2017年8月9日 星期三
-    Joshua Conero
+    无外部依赖 nodeJs 程序开发
 
+> [about the Joshua_Conero](https://www.conero.cn)
 ## 实现的功能
 
 ### Html2js 模板编译器 (20170810)
+
+    简单化nodejs 模板编译的实现
+
 
 ***模板语法格式***
 
@@ -18,7 +22,8 @@
     {{ data.key }} // => data['key']
 
     ```
-
+### Cli-router Cli路由器的实现 (20170810)
+[cli-router](./node_modules/cli-router)
 
 ## npm - cli 程序开发指导
 
