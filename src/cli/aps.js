@@ -5,7 +5,7 @@
  * Joshua Conero
  */
 //Router = require('../cli-router/router')
-const Router = require('cli-router')
+const Router = require('apsjs-cli-router')
 const path = require('path')
 
 

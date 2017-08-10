@@ -1,6 +1,7 @@
 {
   "name": "apsjs",
-  "version": "1.0.1 - 20170809",
+  "version": "0.0.2",
+  "publish":"20170809",
   "create_date": "20170809",
   "description": "learning about the NodeJs and try it",
   "main": "index.js",
@@ -14,8 +15,10 @@
     "type": "git",
     "url": "https://github.com/Conero/apsjs.git"
   },
+  "dependencies": {
+    "apsjs-cli-router": "latest"
+  },
   "keywords": [],
   "author": "Joshua Conero",
-  "private": true,
   "license": "ISC"
 }

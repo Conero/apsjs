@@ -4,6 +4,10 @@
     无外部依赖 nodeJs 程序开发
 
 > [about the Joshua_Conero](https://www.conero.cn)
+## install
+```
+    $ npm install apsjs
+```
 ## 实现的功能
 
 ### Html2js 模板编译器 (20170810)
