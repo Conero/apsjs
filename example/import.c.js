@@ -1,0 +1,2 @@
+// v6 {2017-7-11 16:30:3; apsjs=v0.1.0/20170811; 20170809; Joshua Conero}
+function ConeroCompilerFunction(d){ return '<p>'+ d['base'] +'</p><p>多级模板的实现'+ dd['r']['low'] +'</p><p>模板来自于 import.html</p><div><p>2017年8月11日 星期五v0.1.0 是模板支持import命令</p></div><p>多级模板的实现'+ dd['r']['low'] +'</p>';}

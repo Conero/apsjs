@@ -9,6 +9,15 @@
     $ npm install apsjs
 ```
 ## 实现的功能
+```
+    $ apsjs --set                           内置的命令，自动获取配置项
+    $ apsjs --build/b   file                编译file为js
+            --build/b   .或--all/-all/      编译所有已经缓存的文件
+            --build/b   --list/l            显示或有已经缓存的编译文件
+            --build/b   --remove/rm=file    清除缓存中的文件
+            --build/b   --remove=all        清除缓存中所有的文件
+            --build/b   --add/a=file        新增缓存中的文件
+```
 
 ### Html2js 模板编译器 (20170810)
 
@@ -28,6 +37,11 @@
     ```
 ### Cli-router Cli路由器的实现 (20170810)
 [cli-router](./node_modules/cli-router)
+
+## 版本信息
+***v0.1.x***
+
+    html2js     的实现
 
 ## npm - cli 程序开发指导
 
