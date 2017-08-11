@@ -108,7 +108,8 @@ exports.compiler = (filename) =>{
             json['compile_count'] = (json['compile_count'] || 0) + 1
             this.count = json['compile_count']
             // 编译日期
-            json['compile_time'] = util.getdate()
+            // json['compile_time'] = util.getdate()        // 文件新建时无效
+            json['compile_time'] = new Date()        
             // 编译命令
             if(!json['cmd']) json['cmd'] = filename
             this.cache(json)

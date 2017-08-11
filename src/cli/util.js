@@ -81,3 +81,14 @@ exports.cmdSplit = (cmd, split) =>{
     }
     return [cmd, value]
 }
+/**
+ * 时间比较 dt2 - dt
+ * @param {string|object} dt
+ * @param {string|object} dt2
+ * @return {int}
+ */
+exports.timeDiffSecond = (dt, dt2) => {
+    dt = 'object' == typeof dt? dt : (new Date(dt))
+    dt2 = dt2? ('object' == typeof dt2? dt2 : (new Date(dt2))): new Date()
+    return (dt2.getTime() - dt.getTime())/1000
+}

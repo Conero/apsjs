@@ -11,7 +11,7 @@
 ## 实现的功能
 ```
     $ apsjs --build/b   file                编译file为js
-            --build/b   .或--all/-all/      编译所有已经缓存的文件
+            --build/b   .或--all/-all/      编译所有已经缓存的文件； --all=force 时强制编译，而不根据新建判断
             --build/b   --list/l            显示或有已经缓存的编译文件
             --build/b   --remove/rm=file    清除缓存中的文件
             --build/b   --remove=all        清除缓存中所有的文件

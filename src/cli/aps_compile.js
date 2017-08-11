@@ -210,6 +210,13 @@ exports.Html2Js = (filename, pref) => {
         return truple
     }
     /**
+     * 获取要编译的目标文件名
+     */
+    middleware.getNewFileName = function(fname){
+        if(!fname) return ''     
+        return path.dirname(fname) + '/' + path.basename(fname).replace(path.extname(fname), sys.get('compiled_tpl_ext', '.c.js'))
+    }
+    /**
      * 单文件编译
      */
     middleware.compilerSinglerFile = function(fname, showMk){
@@ -223,7 +230,7 @@ exports.Html2Js = (filename, pref) => {
                 cp.updateInfo()
                 compiledContentStr = `// v${cp.count} {${util.getdate()}; ${Setting.name}=v${Setting.version}/${Setting.publish}; ${Setting.create_date}; ${Setting.author}}\r\n`
                         + compiledContentStr 
-                var newjs = path.dirname(filename) + '/' + path.basename(filename).replace(path.extname(filename), sys.get('compiled_tpl_ext', '.c.js'))
+                var newjs = this.getNewFileName(filename)
                 compiledMsgStr += `${this.pref}${newjs} 文件成功生成(V${cp.count})！`
                 fs.writeFileSync(newjs, compiledContentStr)
             }
@@ -236,14 +243,24 @@ exports.Html2Js = (filename, pref) => {
     }
     /**
      * 通过缓存编译工作区域的所有文件
+     * @param {bool} force
      */
-    middleware.compilerAllByCache = function(){
+    middleware.compilerAllByCache = function(force){
         var runtime = util.runtime()
         var cp = sys.compiler()
         var cacheJson = cp.getJsonInfo()
         var countCompiler = 0
         for(var k in cacheJson){
             var cmd = cacheJson[k]['cmd'] || null
+            // 时间比较
+            if(!force && cmd && fs.existsSync(cmd)){
+                var fstat = fs.statSync(cmd)
+                var sec = util.timeDiffSecond(fstat.mtime, cacheJson[k]['compile_time'])
+                if(sec > 0){
+                    console.log(`${this.pref}模板${cmd}已经十最新模板，无须进行编译.`)
+                    continue
+                }
+            }        
             if(cmd){
                 countCompiler += 1
                 console.log(`${this.pref}模板${cmd}正在编译中……`)
@@ -322,13 +339,12 @@ exports.Html2Js = (filename, pref) => {
         var cmd = cmdTur[0]
         var value = cmdTur[1]
         if(!cmd || '.' == cmd || util.CmdCheck(cmd, ['all', 'a'], true)){
-            middleware.compilerAllByCache()
-            return
+            middleware.compilerAllByCache(value)
         }else if(util.CmdCheck(cmd, ['list', 'l'], true)){   // 显示所缓存文件目录
             middleware.showCacheCompileList()
         }else if(util.CmdCheck(cmd, ['remove', 'rm'], true)){   // 删除缓存文件
             middleware.delCacheCompile(value)
-        }else if(util.CmdCheck(cmd, ['add'], true)){   // 删除缓存文件
+        }else if(util.CmdCheck(cmd, ['add'], true)){   // 新增编译目标缓存文件
             middleware.addCacheCompile(value)
         }else{
             middleware.compilerSinglerFile(cmd)
