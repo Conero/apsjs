@@ -67,6 +67,8 @@ exports.Html2Js = (filename, pref) => {
         pref : pref || `\r\n     `
     }
     var hp = new HtmlParser()    
+    // 特殊符号，自动添加括号 三目运算符
+    var sReg = /[\?\:\+\(\)\|\|]+/
     // 消息接口
     middleware.message = function(){
         return __msg
@@ -104,7 +106,12 @@ exports.Html2Js = (filename, pref) => {
             var lines = bf.toString().split('\n')
             var jsStrStack = []
             var jsContent = ''
-            var reg = /\{\{[\da-zA-Z\s\$\.\_]*\}\}/g
+            // var reg = /^\{\{[\#\da-zA-Z\s\$\.\_]*\}\}$/g
+            // var reg = /^\{\{.*\}\}$/g
+            // if 语句
+            var ifContent = null
+            var hasElseContent = false
+            var reg = /\{\{[^\}]*\}\}/g
             for(var i=0; i<lines.length; i++){
                 // 行脚本处理
                 var line = lines[i]
@@ -113,6 +120,7 @@ exports.Html2Js = (filename, pref) => {
                 if(line.indexOf('<!--') > -1 && line.indexOf('-->') > -1) continue
                 line = line.trim()   
                 if(!line) continue
+                    // 特殊命令处理
                 var apsjs = hp.TagFromOneLine('apsjs', line)
                 var isContinue = false
                 if(apsjs.hasTag){
@@ -129,19 +137,57 @@ exports.Html2Js = (filename, pref) => {
                             break;
                     }                    
                 }        
-                if(isContinue) continue     
-                var vs = line.match(reg)     
+                if(isContinue) continue
+                    // 模板解析 
+                var vs = line.match(reg)  
+                var lineContinueMk = false
                 if(vs){
                     for(var j=0; j<vs.length; j++){
                         var raw = vs[j]
-                        var v = raw.replace(/(\{\{)|(\}\})/g, '').trim()
-                        // d.k => d['k']
-                        v = middleware.point2v(v)
+                        var v = ''                        
+                        // {{/if}}
+                        if(/\{\{\/if\}\}/i.test(raw)){
+                            jsContent += ifContent + (hasElseContent? `') + '`: `':'') + '`)
+                            ifContent = null
+                            lineContinueMk = true
+                            hasElseContent = false
+                            continue
+                        }
+                        // {{/if}}
+                        if(/\{\{\else\}\}/i.test(raw)){
+                            ifContent += `' : '`
+                            lineContinueMk = true
+                            hasElseContent = true
+                            continue
+                        }
+                        // {{if }}
+                        if(/\{\{if/i.test(raw)){
+                            v = raw.replace(/(\{\{if)|(\}\})/g, '').trim()
+                            ifContent = `'+ ((${v})? '`
+                            lineContinueMk = true
+                            continue
+                        }
+                        v = raw.replace(/(\{\{)|(\}\})/g, '').trim()
+                        // {{# k}}
+                        if(0 === v.indexOf('#')){     
+                            v = v.substr(1)                       
+                            if(sReg.test(v)){
+                                v = '(' + v.substr(1) + ')'
+                            }
+                        }else{
+                            // d.k => d['k']
+                            if(sys.get('compiler_point_clear')) v = middleware.point2v(v)
+                        }
                         line = line.replace(raw, `'+ ${v} +'`)
                     }
-                }        
+                }    
+                if(lineContinueMk){
+                    continue
+                    lineContinueMk = false
+                }    
                 //jsStrStack.push(`'${line}'`)
-                jsContent += line
+                if(ifContent) ifContent += line
+                else jsContent += line
             }
             if(jsStrStack.length > 0){
                 // 生成脚本处理                

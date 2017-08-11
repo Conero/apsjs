@@ -10,13 +10,15 @@
 ```
 ## 实现的功能
 ```
-    $ apsjs --set                           内置的命令，自动获取配置项
     $ apsjs --build/b   file                编译file为js
             --build/b   .或--all/-all/      编译所有已经缓存的文件
             --build/b   --list/l            显示或有已经缓存的编译文件
             --build/b   --remove/rm=file    清除缓存中的文件
             --build/b   --remove=all        清除缓存中所有的文件
             --build/b   --add/a=file        新增缓存中的文件
+
+    $ apsjs --config/c  --init/t            配置初始化； --init/t=force 表示强制更新
+            --config/c  --get=key           通过key读取对应的配置
 ```
 
 ### Html2js 模板编译器 (20170810)
@@ -31,9 +33,15 @@
     <a href="{{ value }}">   =>  '<a href="'+ value +'">'
     {{ value }}
 
-    //2.
-    {{ data.key }} // => data['key']
+    //2. 基本用法 - 简单实现(流程式编程)
+    {{ data.key }} // => data['key']， 通过 compiler_point_clear 配置项开启
+    {{# Math.rand()}}            // => 连接处不做编译解析
+    {{ data.k1 || data.k2}}      // => (data.k1? data.k1 : data.k2))
 
+    //3. if 语句的实现 - 简单实现(流程式编程解决方法)
+    {{if dd.key == dd.emma}}
+    {{/else}}
+    {{/if}}
     ```
 ### Cli-router Cli路由器的实现 (20170810)
 [cli-router](./node_modules/cli-router)

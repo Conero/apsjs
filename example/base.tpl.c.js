@@ -1,2 +1,2 @@
-// v1 {2017-7-11 16:19:23; apsjs=v0.1.0/20170811; 20170809; Joshua Conero}
-function ConeroCompilerFunction(d){ return '<p>'+ d['base'] +'</p>';}
+// v58 {2017-7-11 20:27:33; apsjs=v0.1.1/20170811; 20170809; Joshua Conero}
+function ConeroCompilerFunction(d){ return '<p>'+ d['base'] +'</p><h2>'+ (d['title']? d['title']: '三目运算符') +'</h2><div><span></span>'+ d['name'] +'<span></span><span>'+  d.time +'</span></div><p>if 语句测试</p>'+ ((7==9)? '<code>7==9</code><code>7==9</code><code>7==9</code>' : '<code>7!==9</code><code>7!==9</code><code>7!==9</code>') + '<div><span></span>'+ d['name2'] +'<span></span><span>'+  d.time2 +'</span></div><div><span></span>'+ d['name3'] +'<span></span><span>'+  d.time3 +'</span></div>'+ ((G.loop == false)? '<div><span></span>'+ d['name3'] +'<span></span><span>'+  d.time3 +'</span></div>':'') + '<div><span></span>'+ d['name4'] +'<span></span><span>'+  d.time4 +'</span></div>';}

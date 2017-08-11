@@ -14,6 +14,7 @@ const __P = {
     cache_compiler_file: 'compiler.json',          // 编译记录
     
     compiler_tpl_ext: '.html',           // 编译器后缀名
+    compiler_point_clear: true,           // 编译器模板清除点操作符为方扩展 -> 
     compiled_tpl_ext: '.c.js'           // 编译器后缀名
 }
 const basedir = CmdDir + '/' + __P.cache_root_dir + '/'
@@ -94,7 +95,8 @@ exports.compiler = (filename) =>{
             }else{
                 json = config
             }
-            fs.writeFileSync(this.cache_file, JSON.stringify(json))
+            // 格式化输出文件
+            fs.writeFileSync(this.cache_file, JSON.stringify(json, null, 4))
             JsonInfoCache = json
         }
         /**

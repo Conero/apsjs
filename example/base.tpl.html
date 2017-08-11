@@ -3,3 +3,34 @@
 <p>
     {{ d.base }}
 </p>
+
+<h2>{{# d['title']? d['title']: '三目运算符'}}</h2>
+
+
+
+<div><span></span>{{ d.name }}<span></span><span>{{# d.time }}</span></div>
+
+<!-- if 语句测试 -->
+<p>if 语句测试</p>
+{{if 7==9}}
+    <code>7==9</code>
+    <code>7==9</code>
+    <code>7==9</code>
+{{else}}
+    <code>7!==9</code>
+    <code>7!==9</code>
+    <code>7!==9</code>
+{{/if}}
+
+<div><span></span>{{ d.name2 }}<span></span><span>{{# d.time2 }}</span></div>
+
+
+ <!-- <span style="color:{{if 3==7}}red{{/else}}yellow{{/if}}">  -->
+
+<div><span></span>{{ d.name3 }}<span></span><span>{{# d.time3 }}</span></div>    
+
+{{if G.loop == false}}
+    <div><span></span>{{ d.name3 }}<span></span><span>{{# d.time3 }}</span></div>  
+{{/if}}
+
+<div><span></span>{{ d.name4 }}<span></span><span>{{# d.time4 }}</span></div>  

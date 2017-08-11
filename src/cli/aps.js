@@ -9,7 +9,9 @@ const Router = require('apsjs-cli-router')
 
 
 // 编译器
-const compiler = require('./compile')
+const compiler = require('./aps_compile')
+const apsConf = require('./aps_config')
+
 const sys = require('./sysconfig')
 const util = require('./util')
 const Setting = sys.Setting
@@ -35,16 +37,16 @@ router.Option(['b','build'], function(){
         var filename = router.argv.length > 0? router.argv[0]:null
         if(!filename) router.CommandFormat('没有指定文件名，编译无效', null, true)
         else{
-            var h2j = compiler.Html2Js(filename, router.pref)
+            var h2j = compiler.Html2Js(filename, router.showpref)
             var msg = h2j.message()
             if(msg) router.CommandFormat(msg)
         }
     }
     ,'编译 HTML 2 js')
     .Option(['c', 'config'], function(){        
-        var settingFile = sys.basedir + sys.get('project_config_file')
-        console.log(settingFile)
-        
+        //var settingFile = sys.basedir + sys.get('project_config_file')
+        //console.log(settingFile)
+        apsConf.C(router.argv, router.showpref)
         //console.log(router.CmdDir)
     }
     ,'设置项')

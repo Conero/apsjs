@@ -1,0 +1,8 @@
+{
+    "cache_root_dir": ".apsjs",
+    "cache_compiler_file": "compiler.json",
+    "compiler_tpl_ext": ".html",
+    "compiler_point_clear": true,
+    "compiled_tpl_ext": ".c.js",
+    "mtime": 1502446468561
+}
