@@ -1,7 +1,7 @@
 {
   "name": "apsjs",
-  "version": "0.1.2",
-  "publish":"20170811",
+  "version": "0.1.3",
+  "publish":"20170824",
   "create_date": "20170809",
   "description": "learning about the NodeJs and try it",
   "main": "index.js",

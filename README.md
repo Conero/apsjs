@@ -42,6 +42,10 @@
     {{if dd.key == dd.emma}}
     {{/else}}
     {{/if}}
+
+    // 4 apsjs 特殊标签
+    <apsjs item="import" file="./extendtpl/extend.html" />      // 文件导入模板
+    <apsjs item="function" name="__JsDlgcompileFn" />      // 编译的函数名称等处理
     ```
 ### Cli-router Cli路由器的实现 (20170810)
 [cli-router](./node_modules/cli-router)

@@ -97,6 +97,7 @@ exports.Html2Js = (filename, pref) => {
      * @return {array} (content/string, msg/string)
      */
     middleware.compiler = function(fname, rootCompileMk){
+        var compilerFnName = 'ConeroCompilerFunction';
         var ext = sys.get('compiler_tpl_ext', '.html')
         var truple = [null, null]
         if(!fs.existsSync(fname) && fname.lastIndexOf(ext) < 0) fname += ext
@@ -127,13 +128,18 @@ exports.Html2Js = (filename, pref) => {
                     var item = apsjs.getAttr('item')
                     if(item) item = item.toLowerCase()
                     switch(item){
-                        case 'import':
+                        case 'import':  // 导入文件模板
                             var ccArr = middleware.compiler(apsjs.getAttr('file'))
                             if(ccArr[0]){
                                 //jsStrStack.push(ccArr[0])
                                 jsContent += ccArr[0]
                             }
                             isContinue = true
+                            break;
+                        case 'function': // 编译的函数名称
+                            var __tfn = apsjs.getAttr('name');
+                            if(__tfn) compilerFnName = __tfn;
+                            isContinue = true;
                             break;
                     }                    
                 }        
@@ -192,12 +198,12 @@ exports.Html2Js = (filename, pref) => {
             if(jsStrStack.length > 0){
                 // 生成脚本处理                
                 jsContent = jsStrStack.join(' + ')        
-                if(rootCompileMk) jsContent = `function ConeroCompilerFunction(d){ return '${jsContent}';}`
+                if(rootCompileMk) jsContent = `function ${compilerFnName}(d){ return '${jsContent}';}`
                 truple[0] = jsContent
                 truple[1] = `${filename} 文件已经成编译`            
             }
             if(jsContent){
-                if(rootCompileMk) jsContent = `function ConeroCompilerFunction(d){ return '${jsContent}';}`
+                if(rootCompileMk) jsContent = `function ${compilerFnName}(d){ return '${jsContent}';}`
                 truple[0] = jsContent
                 truple[1] = `${filename} 文件已经成编译`   
             }
