@@ -46,6 +46,7 @@ exports.runtime = () =>{
  * @return {bool}
  */
 exports.CmdCheck = (cmd, ref, isRaw, noLowwer) =>{
+    if(!cmd) return false
     if(!isRaw){
         if(cmd.indexOf('--') > -1) cmd = cmd.replace('--', '')
         if(cmd.indexOf('-') > -1) cmd = cmd.replace('-', '')

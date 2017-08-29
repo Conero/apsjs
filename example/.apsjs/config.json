@@ -4,5 +4,10 @@
     "compiler_tpl_ext": ".html",
     "compiler_point_clear": true,
     "compiled_tpl_ext": ".c.js",
-    "mtime": 1502446468561
+    "mtime": 1504013853305,
+    "__private": {
+        "v_apjs": "0.1.4",
+        "v_publish": "20170829"
+    },
+    "kv": "58755"
 }

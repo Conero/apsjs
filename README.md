@@ -18,7 +18,11 @@
             --build/b   --add/a=file        新增缓存中的文件
 
     $ apsjs --config/c  --init/t            配置初始化； --init/t=force 表示强制更新
+            --config/c  --get=..            获取系统全部配置
             --config/c  --get=key           通过key读取对应的配置
+            --config/c  --set=key1/value1 通过key读取对应的配置
+    
+    $ apsjs --fs/f      --fs=%%             文件搜索表达式，搜索当前根目录文件
 ```
 
 ### Html2js 模板编译器 (20170810)
@@ -54,6 +58,10 @@
 ***v0.1.x***
 
     html2js     的实现
+
+***v0.2.x***
+
+    文件搜索功能实现，以及搜索是缓存处理    
 
 ## npm - cli 程序开发指导
 

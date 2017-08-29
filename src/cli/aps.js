@@ -11,6 +11,7 @@ const Router = require('apsjs-cli-router')
 // 编译器
 const compiler = require('./aps_compile')
 const apsConf = require('./aps_config')
+const apsfs = require('./aps_filesearch')
 
 const sys = require('./sysconfig')
 const util = require('./util')
@@ -41,15 +42,18 @@ router.Option(['b','build'], function(){
             var msg = h2j.message()
             if(msg) router.CommandFormat(msg)
         }
-    }
-    ,'编译 HTML 2 js')
+    },'编译 HTML 2 js')
+
     .Option(['c', 'config'], function(){        
         //var settingFile = sys.basedir + sys.get('project_config_file')
         //console.log(settingFile)
         apsConf.C(router.argv, router.showpref)
         //console.log(router.CmdDir)
-    }
-    ,'设置项')
+    },'设置项')
+
+    .Option(['f', 'fs'], function(){
+        apsfs.Su(router.argv, router.showpref)
+    },'文件搜索器')
 
 // 默认函数
 router.Option(['v', 'version'], 'v '+ Setting.version, '版本信息')

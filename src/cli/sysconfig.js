@@ -34,11 +34,36 @@ function getUserConfig(key){
     return config
 }
 /**
+ * 获取系统参数值, 通过键值获取
+ * @return {any}
+ */
+exports.getUserConfigByKey = getUserConfig
+/**
+ * 获取用户json的全部值
+ * @return {JSON}
+ */
+exports.getUserConf = () =>{
+    var newJson = {}
+    if(fs.existsSync(this.userConfigPath)){
+        newJson = require(this.userConfigPath)
+    }
+    return newJson
+}
+/**
  * 系统默认常量
  */
 exports.__P = __P
+
 exports.basedir = basedir
+/**
+ * 系统配置
+ */
 exports.Setting = Setting
+
+/**
+ * 用户私用配置文件路径
+ */
+exports.userConfigPath = basedir + __P.project_config_file
 
 /**
  * 获取配置项，先检测用户配置，在从系统配置获取
