@@ -8,7 +8,7 @@ const fs = require('fs')
 const util = require('./util')
 const sys = require('./sysconfig')
 
-const CmdDir = process.cwd().replace(/\\/g, '/') + '/'
+const CmdDir = process.cwd().replace(/\\/g, '/')
 
 
 /**
@@ -81,6 +81,20 @@ exports.Su = (argv, pref) =>{
             console.log(msg)
         }
         /**
+         * 输出成功的cmd字符格式
+         * @param {any} msg 
+         */
+        SuccessMsg(msg){
+            this.Show(`${pref} :)  ${msg}`)
+        }
+        /**
+         * 输出失败的cmd字符格式
+         * @param {any} msg 
+         */
+        ErrorMsg(msg){
+            this.Show(`${pref}-:)  ${msg}`)
+        }
+        /**
          * 文档
          */
         Doc(){
@@ -105,30 +119,21 @@ exports.Su = (argv, pref) =>{
                 ){
                     // 缓存目录不进行遍历
                     if('.apsjs' == el) continue;
+                    this.InnerAdd('sAllDirCount')
                     this.ReadDirHandler(cPath)
                 }
-                else{                    
+                else{
+                    this.InnerAdd('sAllFileCount')              
                     // 精确搜索
-                    if(-1 == this.value.indexOf('*') && el == this.value){
+                    if(-1 == this.value.indexOf('*') && el.toLowerCase() == this.value.toLowerCase()){
                         var Idx = this.InnerAdd('sCount')
                         this.Show(`${pref} :) ${Idx}.    ---->  ${el}      | ${path}`) 
-                    // 后缀式搜索
-                    }else if(0 == this.value.indexOf('*')){ // *.js
-                        if(el.lastIndexOf(this.value.replace('*',''))){
+                    }else if(this.InterVariable['sReg']){  // * 替代法                      
+                        if(this.InterVariable['sReg'].test(el)){
                             var Idx = this.InnerAdd('sCount')
                             this.Show(`${pref} :) ${Idx}.    ---->  ${el}      | ${path}`) 
                         }  
-                    // 前缀是搜索
-                    }else if(0 == this.value.lastIndexOf('*')){ // *.js
-                        if(el.indexOf(this.value.replace('*',''))){
-                            var Idx = this.InnerAdd('sCount')
-                            this.Show(`${pref} :) ${Idx}.    ---->  ${el}      | ${path}`) 
-                        }  
-                    }else if(this.InterVariable['sReg'] && this.InterVariable['sReg'].test()){
-                        var Idx = this.InnerAdd('sCount')
-                        this.Show(`${pref} :) ${Idx}.    ---->  ${el}      | ${path}`)      
-                    }                    
-                    //console.log(el)
+                    }                                       
                 }                
             }
         }
@@ -137,19 +142,27 @@ exports.Su = (argv, pref) =>{
          */
         FileSeachAction(){
             var value = this.value
-            if(value){        
+            if(value){                
+                const RunRptObj = util.runtime()
                 this.GetInner('sCount', 0, true)
+                this.GetInner('sAllFileCount', 0, true)
+                this.GetInner('sAllDirCount', 0, true)
                 if(this.value.indexOf('*') > -1){
-                    var v4r = this.value.replace(/\./g, '\\.')
-                    v4r = v4r.replace(/\*/g, '.*')
-                    // console.log('/^' + v4r + '$/')
-                    var sReg = new RegExp('/^' + v4r + '$/')
-                    this.InterVariable['sReg'] = sReg
+                    var crtReg = this.value.replace(/\./g, '\\.').replace(/\*/g, '(.*)')
+                    var reg
+                    eval(`reg = /^${crtReg}$/i`)
+                    this.InterVariable['sReg'] = reg
+                }else{
+                    this.InterVariable['sReg'] = null
                 }
                 this.ReadDirHandler(CmdDir) 
+                var runRptMsg = `本次共搜索目录 ${this.InterVariable['sAllDirCount']} 个；文件 ${this.InterVariable['sAllFileCount']} 个；`
+                runRptMsg += `搜索到的目标文件 ${this.InterVariable['sCount']} 个；`
+                runRptMsg += `用时 ${RunRptObj.getRunSecond()}s.`
+                this.SuccessMsg(runRptMsg)
             }
             else{
-                this.Show(`${pref}-:)  搜索不可为空……`)
+                this.ErrorMsg('搜索不可为空……')
             }           
         }
     }

@@ -55,6 +55,7 @@
 [cli-router](./node_modules/cli-router)
 
 ## 版本信息
+***[详情](./version.md)***
 ***v0.1.x***
 
     html2js     的实现

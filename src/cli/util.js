@@ -93,3 +93,38 @@ exports.timeDiffSecond = (dt, dt2) => {
     dt2 = dt2? ('object' == typeof dt2? dt2 : (new Date(dt2))): new Date()
     return (dt2.getTime() - dt.getTime())/1000
 }
+/**
+ * cmd 过程提示框
+ * @return {Object}
+ */
+exports.CmdProcessTip = () =>{
+    class CPT{
+        constructor(){
+            this.timerId = null
+            this.SetSec()
+        }
+        /**
+         * 设置运行秒
+         * @param {number} sec 
+         * @return {*}
+         */
+        SetSec(sec){
+            this.sec = sec || 2000
+            return this
+        }
+        Star(callback){
+            if('function' == typeof callback){
+                callback = function(){
+                    console.log('...')
+                }
+            }
+            this.timerId = setInterval(callback, this.sec)
+        }
+        Stop(){
+            if(this.timerId) clearInterval(this.timerId)
+        }
+    }
+    return new CPT
+}
+
+
