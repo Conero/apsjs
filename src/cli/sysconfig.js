@@ -9,12 +9,13 @@ const util = require('./util')
 
 const CmdDir = process.cwd()
 const __P = {
-    cache_root_dir : '.apsjs',                 // 缓存顶层文件目录
-    project_config_file: 'config.json',          // 项目配置文件
-    cache_compiler_file: 'compiler.json',          // 编译记录
+    cache_root_dir : '.apsjs',                      // 缓存顶层文件目录
+    project_config_file: 'config.json',             // 项目配置文件
+    cache_compiler_file: 'compiler.json',           // 编译记录
     
-    compiler_tpl_ext: '.html',           // 编译器后缀名
-    compiler_point_clear: true,           // 编译器模板清除点操作符为方扩展 -> 
+    compile_init_file: 'apsjs.json',    // 项目配置文件
+    compiler_tpl_ext: '.html',          // 编译器后缀名
+    compiler_point_clear: true,         // 编译器模板清除点操作符为方扩展 -> 
     compiled_tpl_ext: '.c.js'           // 编译器后缀名
 }
 const basedir = CmdDir + '/' + __P.cache_root_dir + '/'
@@ -53,8 +54,14 @@ exports.getUserConf = () =>{
  * 系统默认常量
  */
 exports.__P = __P
-
+/**
+ * 缓存基本目录
+ */
 exports.basedir = basedir
+/**
+ * 命令行根目录
+ */
+exports.CmdDir = CmdDir
 /**
  * 系统配置
  */

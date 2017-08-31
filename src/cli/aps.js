@@ -55,6 +55,10 @@ router.Option(['b','build'], function(){
         apsfs.Su(router.argv, router.showpref)
     },'文件搜索器')
 
+    .Option(['?', 'help'], function(){
+        console.log(router.GetDoc())
+    },'帮助以及说明')
+
 // 默认函数
 router.Option(['v', 'version'], 'v '+ Setting.version, '版本信息')
     .Option(['n', 'name'], Setting.name, '名称')    

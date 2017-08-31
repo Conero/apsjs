@@ -17,6 +17,8 @@
             --build/b   --remove=all        清除缓存中所有的文件
             --build/b   --add/a=file        新增缓存中的文件
 
+            --build/b   --init/i=force      初始化 "apsjs.compiler.json" 配置文件，force 强制执行    
+
     $ apsjs --config/c  --init/t            配置初始化； --init/t=force 表示强制更新
             --config/c  --get=..            获取系统全部配置
             --config/c  --get=key           通过key读取对应的配置
@@ -51,6 +53,9 @@
     <apsjs item="import" file="./extendtpl/extend.html" />      // 文件导入模板
     <apsjs item="function" name="__JsDlgcompileFn" />      // 编译的函数名称等处理
     ```
+
+#### SuCompiler - 新编译器/ Su(20170831)
+
 ### Cli-router Cli路由器的实现 (20170810)
 [cli-router](./node_modules/cli-router)
 

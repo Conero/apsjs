@@ -54,6 +54,60 @@ class HtmlParser{
     }
 }
 
+/**
+ * 新编译器： 根据目录下配置文件进行相关编译. since 20170831
+ */
+class SuCompiler{
+    /**
+     * 项目初始化
+     * @param {Object} middleware 
+     */
+    constructor(middleware){
+        this.middleware = middleware
+        this.MapSuccessMk = false
+        this.configName = sys.get('compile_init_file')
+        this.configPath = sys.CmdDir + '/' + this.configName
+    }    
+    /**
+     * 获取系统初始化 JSON 
+     * @return {JSON}
+     */
+    GetInitJson(){
+        return {
+            "source_dir": "编译资源根目录",
+            "target_dir": "编译目标根目录",
+        }
+    }
+    InitAction(){
+        console.log(this.middleware.pref + '--init 正在执行……')
+        var IsForceMk = (this.value && 'FORCE' == this.value.toUpperCase())? true:false     
+        if(false == IsForceMk && fs.existsSync(this.configPath)){
+            console.log(this.middleware.pref + `${this.configName} 文件以及存在，无须再初始化.`)
+        }
+        else{
+            fs.writeFileSync(this.configPath, JSON.stringify(this.GetInitJson(), null, 4))
+            var msg = IsForceMk? `${this.configName} 已经强制初始化.`:`${this.configName} 初始化成功.`
+            console.log(this.middleware.pref + msg)
+        }   
+    }
+    /**
+     * 新的编译器执行入口
+     * @param {string} cmd
+     * @param {string} value
+     * @return {boolean}
+     */
+    RunNewCompiler(cmd, value){
+        this.cmd = cmd
+        this.value = value
+        if(util.CmdCheck(cmd, ['init'])){
+            this.MapSuccessMk = true
+            this.InitAction()
+        }
+        return this.MapSuccessMk
+    }
+}
+
+
  /**
   * HTML编辑器
   * @param {string} filename 文件名
@@ -337,6 +391,23 @@ exports.Html2Js = (filename, pref) => {
         }
         else __msg = `您没有加入任何文件`
     }
+    /**
+     * 文档
+     * @return {string}
+     */
+    middleware.Doc = () => {
+        return `${middleware.pref}    $ --build/b      file                编译file为js` + 
+               `${middleware.pref}    $ --build/b      .或--all/-all/      编译所有已经缓存的文件； --all=force 时强制编译，而不根据新旧判断` + 
+               `${middleware.pref}    $ --build/b      --list/l            显示或有已经缓存的编译文件` + 
+               `${middleware.pref}    $ --build/b      --remove/rm=file    清除缓存中的文件` + 
+               `${middleware.pref}    $ --build/b      --remove=all        清除缓存中所有的文件` + 
+               `${middleware.pref}    $ --build/b      --add/a=file        新增缓存中的文件` +
+               // 根据模板编译 HTML
+               `${middleware.pref}    $ --build/b      --init/i=force      初始化 "apsjs.compiler.json" 配置文件，force 强制执行    ` +               
+               
+               // 文档说明 
+               `${middleware.pref}    $ --build/b      ?/--help              文档说明`
+    }
     // 编译进行
     middleware.console = function(){
         // 子命令
@@ -352,6 +423,14 @@ exports.Html2Js = (filename, pref) => {
             middleware.delCacheCompile(value)
         }else if(util.CmdCheck(cmd, ['add'], true)){   // 新增编译目标缓存文件
             middleware.addCacheCompile(value)
+        }else if(util.CmdCheck(cmd, ['help'], true)){
+            console.log(middleware.Doc())
+        }else if(util.CmdCheck(cmd, ['?'])){
+            console.log(middleware.Doc())
+        // 新编译器载入
+        }else if(
+            (new SuCompiler(middleware))
+            .RunNewCompiler(cmd, value)){
         }else{
             middleware.compilerSinglerFile(cmd)
         }
