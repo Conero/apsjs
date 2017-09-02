@@ -29,9 +29,16 @@ exports.runtime = () =>{
         }
         /**
          * 获取运行的时长秒(s)
-         * @return int
+         * @return {int}
          */
         getRunSecond(){
+            return this.getMicroSec()/1000
+        }
+        /**
+         * 获取毫米数/ ms
+         * @return {int}
+         */
+        getMicroSec(){
             return (new Date()).getTime() - this.startTime.getTime()
         }
     }

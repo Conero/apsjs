@@ -63,10 +63,11 @@ class SuCompiler{
      * @param {Object} middleware 
      */
     constructor(middleware){
-        this.middleware = middleware
-        this.MapSuccessMk = false
-        this.configName = sys.get('compile_init_file')
-        this.configPath = sys.CmdDir + '/' + this.configName
+        this.middleware = middleware    // 中间件
+        this.MapSuccessMk = false       // 符合路由标记
+        this.configName = sys.get('compile_init_file')  // 获取配置模板名称
+        this.configPath = sys.CmdDir + '/' + this.configName    // 配置模板路径        
+        this.useConfJsonData = null     // 用户配置模板内容
     }    
     /**
      * 获取系统初始化 JSON 
@@ -76,7 +77,38 @@ class SuCompiler{
         return {
             "source_dir": "编译资源根目录",
             "target_dir": "编译目标根目录",
+            "main_script":  "cmake.tpl.js",       // 主入口文件
+            "auto_create_main": 'Y'              // 模块中不存在入口编译文件时自动是否自动生成，默认是
         }
+    }
+    /**
+     * 初始化是否成功
+     */
+    IsInitSuccess(){
+        return fs.existsSync(this.configPath)
+    }
+    /**
+     * 获取用户配置值
+     * @return {null|JSON}  为空时标识模板不存在
+     */
+    GetUserConf(){
+        if(fs.existsSync(this.configPath) && !this.useConfJsonData){
+            this.useConfJsonData = require(this.configPath)            
+        }
+        return this.useConfJsonData
+    }
+    /**
+     * 获取用户配置的值
+     * @param {string} key 
+     * @param {any} def 
+     */
+    GetUserValue(key, def){
+        def = def || null
+        var json = this.GetUserConf()
+        if(json){
+            def = json[key] || def
+        }
+        return def
     }
     InitAction(){
         console.log(this.middleware.pref + '--init 正在执行……')
@@ -91,6 +123,213 @@ class SuCompiler{
         }   
     }
     /**
+     * require 命令转变为字符串
+     * @param {string} path 
+     * @param {Object} ScriptVaule 
+     */
+    CmakeRequireTpl2Str(path, ScriptVaule){
+        var reg = /^\.\//
+        var filename = reg.test(path)? path.replace(reg, ScriptVaule.module_dir) : path
+        //this.middleware.SuccessMsg(filename)
+        var content = ''
+        if(fs.existsSync(filename)){
+            var TmpTurple = this.middleware.compiler(filename, 'RAWC')
+            content = TmpTurple[0]
+            if(TmpTurple[1]) this.CmakeMsgQueue(TmpTurple[1])
+        }
+        return content
+    }
+
+    /**
+     * 全局 $script 处理
+     * @param {string} line 行字符串
+     * @param {Object} ScriptVaule 脚本全局值
+     */
+    CmakeScriptElement(line, ScriptVaule){
+        ScriptVaule = ScriptVaule||{}
+        var equilStr = '='
+        var eqIdx = line.indexOf(equilStr)
+        var key = line.substr(0, eqIdx).trim()
+        var value = line.substr(eqIdx + 1).trim()
+        var mkStrReg = /\'|\"/g
+        // require 标签
+        if(/require/i.test(value)){
+            //value = /\'.*\'/
+            var tmpArray = value.match(/\'.*\'/)
+            var filename = tmpArray.length>0? tmpArray[0].replace(mkStrReg, '') : null
+            var content = this.CmakeRequireTpl2Str(filename, ScriptVaule)
+            // 编译模板值
+            if(!ScriptVaule['__TPL__']) ScriptVaule['__TPL__'] = {}
+            ScriptVaule['__TPL__'][key] = content
+            return
+        }
+        else{
+            value = value.replace(mkStrReg , '')            
+        }
+        ScriptVaule[key] = value
+    }
+    /**
+     * 单模块编译
+     * @param {string} md 
+     * @return {boolean} 是否成功
+     */
+    CmakeSingleModule(md){
+        //var mdPath = 
+        // 内部方法使用方法，仅仅在调用方法是才产生的值 p{}V        
+        var path = this.pSourceDirV + '/' + md + '/'
+        var pStat = fs.statSync(path)
+        if(!pStat.isDirectory()){
+            this.CmakeMsgQueue(`${path} 不是有效目录！`, true)
+            return false
+        }
+        var tplJsFile = path + this.GetUserValue('main_script', 'cmake.tpl.js')
+        // 编译主文件检测是否存在
+        if(!fs.existsSync(tplJsFile)){
+            var auto_create_main = this.GetUserValue('auto_create_main', 'Y')
+            if('Y' !== auto_create_main){
+                this.CmakeMsgQueue(`${path} 不是有效目录！`, true)
+                return false
+            }            
+        }else{
+            var bf = fs.readFileSync(tplJsFile)
+            var lines = bf.toString().split('\n')
+            // 多行注释标记
+            var isCommentMk = false
+            // 脚本全局变量
+            var ScriptVaule = {
+                module_dir: path
+            }
+            var ScriptElReg = /^\$Script\./i
+            // $Script.Begin
+            var ScriptElStarReg = /^\$Script\.Begin$/i
+            var ScriptElStarMk = false
+            var ScriptString = ''
+            var TplReg = /\$Script\.TPL\./i
+            for(var i=0; i<lines.length; i++){    
+                var line = lines[i].trim()
+
+                // 空行跳过
+                // 忽视行处理
+                if(!line) continue     
+                // 多行注释结束
+                if(line.lastIndexOf('*/') != -1){
+                    isCommentMk = false
+                    continue
+                }      
+                // 多行注释开始 
+                if(line.indexOf('/*') != -1){ isCommentMk = true }
+                if(isCommentMk) continue
+                if(line.indexOf('//') != -1){
+                    continue
+                }
+                // 脚本开始
+                if(ScriptElStarReg.test(line)){
+                    ScriptElStarMk = true
+                    continue
+                }
+                // 头标签处理
+                if(ScriptElReg.test(line)){
+                    this.CmakeScriptElement(line.replace(ScriptElReg, ''), ScriptVaule)
+                }
+                if(ScriptElStarMk){                    
+                    if(TplReg.test(line)){
+                        var Tpls = ScriptVaule['__TPL__'] || {}
+                        for(var k in Tpls){
+                            var tmpReg = null
+                            eval(`tmpReg = /\\$Script\\.TPL\\.${k}/g`)
+                            // console.log(tmpReg, Math.random())
+                            if(tmpReg){
+                                line = line.replace(tmpReg, Tpls[k])
+                            }
+                        }
+                    }
+                    ScriptString += line
+                }
+            }
+            if(!fs.existsSync(this.pTargetDirV)){
+                fs.mkdirSync(this.pTargetDirV)                
+            }
+            // 文件写入
+            var targetFile = this.pTargetDirV + '/' + md + '/' +  (ScriptVaule['Cmake'] || md + '.js')
+            fs.writeFileSync(targetFile, ScriptString)
+            this.CmakeMsgQueue(`${md} 编译成功， 目标文件 ${targetFile} ！`)
+            // console.log(ScriptVaule)
+        }
+    }
+    /**
+     * 全模块编译的实现
+     */
+    CmakeAllModule(){
+        if(fs.existsSync(this.pSourceDirV)){
+            var mds = fs.readdirSync(this.pSourceDirV)
+            for(var i=0; i<mds.length; i++){
+                var pathName = this.pSourceDirV + '/' + mds[i] + '/'
+                if(!fs.statSync(pathName).isDirectory()){                    
+                    continue
+                }
+                this.CmakeSingleModule(mds[i])
+            }
+        }else{
+            this.middleware.ErrorMsg('您没有任何需要编译的模板！')
+        }
+    }
+    /**
+     * 编译消息队列
+     * @param {string|undefined} msg  为空时获取否则写入
+     * @param {boolean} errorMk 是否为错误信息
+     * @param {boolean} feekRowQueue 返回原始队列
+     * @return {string|null}
+     */
+    CmakeMsgQueue(msg, errorMk, feekRowQueue){
+        if(!this.CmakeMsgQueuev){
+            this.CmakeMsgQueuev = []
+        }
+        if(msg){
+            msg = errorMk? this.middleware.ErrorMsg(msg, true): this.middleware.SuccessMsg(msg, true)
+            this.CmakeMsgQueuev.push(msg)
+        }else{
+            return feekRowQueue? this.CmakeMsgQueuev : this.CmakeMsgQueuev.join('')
+        }
+    }
+    CmakeAction(){   
+        if(!this.IsInitSuccess()){
+            return this.middleware.ErrorMsg('项目还没有初始化成功！')
+        }
+        var RunTime = util.runtime()
+
+        // 配置 source_dir/target_dir 参数检测
+        // 内部方法使用方法，仅仅在调用方法是才产生的值 p{}V
+        if(!this.pSourceDirV){
+            this.pSourceDirV = sys.CmdDir
+            this.pTargetDirV = this.pSourceDirV
+            var path = this.GetUserValue('source_dir')
+            if(!path){
+                return this.middleware.ErrorMsg('项目初始化时， 参数 source_dir 未设置!!')
+            }
+            // 不设置时自动用 source_dir 替换
+            var tpath = this.GetUserValue('target_dir', path)
+            if(!tpath){
+                return this.middleware.ErrorMsg('项目初始化时， 参数 target_dir 未设置!!')
+            }
+            this.pSourceDirV += '/' + path            
+            this.pTargetDirV += '/' + tpath 
+            if(!fs.existsSync(this.pSourceDirV)) fs.mkdir(this.pSourceDirV)  
+            if(!fs.existsSync(this.pTargetDirV)) fs.mkdir(this.pTargetDirV)  
+        }
+        // 编译执行
+        if(this.value){
+            this.middleware.SuccessMsg(`正在编译 ${this.value} 模板……`)
+            this.CmakeSingleModule(this.value)
+            console.log(this.CmakeMsgQueue())
+        }
+        else{
+            this.middleware.SuccessMsg(`正在编译全部模板……`)
+            this.CmakeAllModule()
+            console.log(this.CmakeMsgQueue())
+        }
+        this.middleware.SuccessMsg(`本次用时 ${RunTime.getRunSecond()} s`)
+    }
+    /**
      * 新的编译器执行入口
      * @param {string} cmd
      * @param {string} value
@@ -99,9 +338,12 @@ class SuCompiler{
     RunNewCompiler(cmd, value){
         this.cmd = cmd
         this.value = value
-        if(util.CmdCheck(cmd, ['init'])){
+        if(util.CmdCheck(cmd, ['i', 'init'], true)){
             this.MapSuccessMk = true
             this.InitAction()
+        }else if(util.CmdCheck(cmd, ['c', 'cmake'], true)){
+            this.MapSuccessMk = true
+            this.CmakeAction()
         }
         return this.MapSuccessMk
     }
@@ -147,8 +389,8 @@ exports.Html2Js = (filename, pref) => {
     /**
      * 递归编译文本
      * @param {string} fname 文件名
-     * @param {bool} rootCompileMk 根目录标识
-     * @return {array} (content/string, msg/string)
+     * @param {bool|string} rootCompileMk 根目录标识; RAWC 表示放回原始字符串
+     * @return {array} (content/string, msg/string, functionname/string)
      */
     middleware.compiler = function(fname, rootCompileMk){
         var compilerFnName = 'ConeroCompilerFunction';
@@ -252,12 +494,16 @@ exports.Html2Js = (filename, pref) => {
             if(jsStrStack.length > 0){
                 // 生成脚本处理                
                 jsContent = jsStrStack.join(' + ')        
-                if(rootCompileMk) jsContent = `function ${compilerFnName}(d){ return '${jsContent}';}`
+                if(rootCompileMk){
+                    jsContent = 'RAWC' == rootCompileMk? `'${jsContent}'` : `function ${compilerFnName}(d){ return '${jsContent}';}`
+                }
                 truple[0] = jsContent
                 truple[1] = `${filename} 文件已经成编译`            
             }
             if(jsContent){
-                if(rootCompileMk) jsContent = `function ${compilerFnName}(d){ return '${jsContent}';}`
+                if(rootCompileMk){                    
+                    jsContent = 'RAWC' == rootCompileMk? `'${jsContent}'` : `function ${compilerFnName}(d){ return '${jsContent}';}`
+                }
                 truple[0] = jsContent
                 truple[1] = `${filename} 文件已经成编译`   
             }
@@ -267,6 +513,8 @@ exports.Html2Js = (filename, pref) => {
         }else{
             truple[1] = `${filename} 文件不存在`            
         }
+        // 放回函数名称
+        truple[2] = compilerFnName
         return truple
     }
     /**
@@ -403,10 +651,37 @@ exports.Html2Js = (filename, pref) => {
                `${middleware.pref}    $ --build/b      --remove=all        清除缓存中所有的文件` + 
                `${middleware.pref}    $ --build/b      --add/a=file        新增缓存中的文件` +
                // 根据模板编译 HTML
-               `${middleware.pref}    $ --build/b      --init/i=force      初始化 "apsjs.compiler.json" 配置文件，force 强制执行    ` +               
+               `${middleware.pref}    $ --build/b      --init/i=force      初始化 "apsjs.compiler.json" 配置文件，force 强制执行    ` +              
+               `${middleware.pref}    $ --build/b      --cmake/c=Module    根据 "apsjs.compiler.json" 配置自动编译文件， 配置 Module 时编译对应模块模板，否则全部    ` +               
                
                // 文档说明 
                `${middleware.pref}    $ --build/b      ?/--help              文档说明`
+    }
+    /**
+     * 成功消息打印
+     * @param {any} msg
+     * @param {boolean} feekStr
+     * @return {null|string}
+     */
+    middleware.SuccessMsg = (msg, feekStr) => {
+        msg = `${middleware.pref}   :)-    ${msg}`
+        if(feekStr){
+            return msg
+        }
+        console.log(msg)
+    }
+    /**
+     * 失败打印消息
+     * @param {any} msg
+     * @param {boolean} feekStr
+     * @return {null|string}
+     */
+    middleware.ErrorMsg = (msg, feekStr) => {
+        msg = `${middleware.pref}   -:)    ${msg}`
+        if(feekStr){
+            return msg
+        }
+        console.log(msg)
     }
     // 编译进行
     middleware.console = function(){

@@ -18,6 +18,7 @@
             --build/b   --add/a=file        新增缓存中的文件
 
             --build/b   --init/i=force      初始化 "apsjs.compiler.json" 配置文件，force 强制执行    
+            --build/b   --cmake/c=Module    根据 "apsjs.compiler.json" 配置自动编译文件， 配置 Module 时编译对应模块模板，否则全部
 
     $ apsjs --config/c  --init/t            配置初始化； --init/t=force 表示强制更新
             --config/c  --get=..            获取系统全部配置
